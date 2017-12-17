@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#F44336</color>
+    <color name="colorPrimaryDark">#D50000</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="rv_text_background">#F44336</color>
+    <color name="rv_text_color">#FAFAFA</color>
+    <color name="black">#263238</color>
+    <color name="plot_color">#FFC400</color>
+    <color name="release_color">#1E88E5</color>
+    <color name="rating_color">#64DD17</color>
+</resources>
