@@ -22,7 +22,7 @@ public class Constants {
     public static final String TOP_MOVIE="top_rated";
     public static final String API="?api_key=";
     //TODO(1) API KEY HERE
-    public static final String API_KEY="7f55d0a9a3def634de5223eb86e74ae4";
+    public static final String API_KEY="";
 
     //IMAGE
     public static final String BASE_IMG_URL="http://image.tmdb.org/t/p/";
