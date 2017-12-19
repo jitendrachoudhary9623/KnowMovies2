@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         pb = (ProgressBar) findViewById(R.id.pb_main);
 
         new MovieData().execute(qb.BuildQuery(1));
+        setActionBarTitle(R.string.sort_popular);
 
 
     }
@@ -81,23 +82,60 @@ public class MainActivity extends AppCompatActivity {
         int itemSelected = item.getItemId();
         switch (itemSelected) {
             case R.id.menu_popular:
-                DisplayToast("Popular Selected");
+               // DisplayToast("Popular Selected");
                 clearRecylcerView();
                 new MovieData().execute(qb.BuildQuery(1));
+                setActionBarTitle(R.string.sort_popular);
                 return true;
             case R.id.menu_top:
-                DisplayToast("Top Rated Selected");
+              //  DisplayToast("Top Rated Selected");
                 clearRecylcerView();
                 new MovieData().execute(qb.BuildQuery(2));
+                setActionBarTitle(R.string.sort_top);
+                return true;
+            case R.id.menu_upcoming:
+               // DisplayToast("Top Rated Selected");
+                clearRecylcerView();
+                new MovieData().execute(qb.BuildQuery(3));
+                setActionBarTitle(R.string.sort_upcoming);
+                return true;
+            case R.id.menu_now_playing:
+                // DisplayToast("Top Rated Selected");
+                clearRecylcerView();
+                new MovieData().execute(qb.BuildQuery(4));
+                setActionBarTitle(R.string.sort_now_playing);
                 return true;
         }
 
         return false;
     }
+    void setUpMovies(int id)
+    {
+        switch(id)
+        {
+            case 1:
 
+                break;
+            case 2:
+
+                break;
+            case 3:
+
+                break;
+            case 4:
+
+                break;
+        }
+    }
+    void setActionBarTitle(int title)
+    {
+        getSupportActionBar().setTitle(title);
+
+    }
     void clearRecylcerView() {
         clearListData();
         adapter.notifyDataSetChanged();
+      //  adapter.notifyDataSetChanged();
     }
 
     private void clearListData() {
@@ -120,16 +158,19 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected List<Movie> doInBackground(String... strings) {
             Request.Builder builder = new Request.Builder();
-            builder.url(strings[0]);
-            Request request = builder.build();
+            for(int i=0;i<5;i++) {
+                String page=Constants.PAGE_NO+i;
+                builder.url(strings[0]+=page);
+                Request request = builder.build();
 
-            try {
-                Response response = client.newCall(request).execute();
-                resStr = response.body().string();
+                try {
+                    Response response = client.newCall(request).execute();
+                    resStr = response.body().string();
 
-                createJSON(resStr);
-            } catch (Exception e) {
-                e.printStackTrace();
+                    createJSON(resStr);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             return movieData;
         }

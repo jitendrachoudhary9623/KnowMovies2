@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Know Movies</string>
-    <string name="sort_popular">Most Popular</string>
-    <string name="sort_top">Top Rated</string>
+    <string name="sort_popular">Popular Movies</string>
+    <string name="sort_top">Top Rated Movies</string>
+    <string name="sort_upcoming">Upcoming Movies</string>
+    <string name="sort_now_playing">Now Playing Movies</string>
     <string name="title">Title</string>
     <string name="overview">Plot</string>
     <string name="Rating">User Rating</string>

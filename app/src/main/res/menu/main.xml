@@ -14,4 +14,18 @@
 
         app:showAsAction="collapseActionView"
         />
+    <item
+        android:title="@string/sort_upcoming"
+        android:orderInCategory="3"
+        android:id="@+id/menu_upcoming"
+
+        app:showAsAction="collapseActionView"
+        />
+    <item
+        android:title="@string/sort_now_playing"
+        android:orderInCategory="4"
+        android:id="@+id/menu_now_playing"
+
+        app:showAsAction="collapseActionView"
+        />
 </menu>
