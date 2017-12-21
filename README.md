@@ -1,5 +1,5 @@
 # KnowMovies2
-  This Android Application feteches the data from the movieDB API and Displays the data on the mobile device.
+  This Android Application gets the data from the movieDB API and Displays the data on the mobile device.
   The User can see the details of 
   <ol>
 <li>
