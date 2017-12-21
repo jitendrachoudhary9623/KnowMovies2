@@ -6,9 +6,12 @@
       Upcoming Movies
       Now Playing Movies
   
-  #Now Playing Movies
-  ![Now Playing](http://i65.tinypic.com/2hylce9.png)
+  ### Now Playing Movies
+ 
+<a href="url"><img src="http://i65.tinypic.com/2hylce9.png" align="center" height="480" width="320" ></a>
 
+  ### Popular Movies
+<a href="url"><img src="http://i66.tinypic.com/ea1fzc.png" align="center" height="480" width="320" ></a>
 
 ### Enter API KEY in Data/Constants.java
 
