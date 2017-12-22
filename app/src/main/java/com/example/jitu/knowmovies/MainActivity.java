@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -308,4 +309,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 */
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        outState.putSerializable("movieData", (Serializable) movieData);
+        DisplayToast("Inside onSave");
+        super.onSaveInstanceState(outState);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        movieData= (List<Movie>) savedInstanceState.getSerializable("movieData");
+        setupRecyclerView();
+        super.onRestoreInstanceState(savedInstanceState);
+
+    }
 }
