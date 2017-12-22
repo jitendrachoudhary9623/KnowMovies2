@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         final OkHttpClient client = new OkHttpClient();
 
         return new AsyncTaskLoader<String>(this) {
-
+            String resultantJSON;
             @Override
             protected void onStartLoading() {
                 super.onStartLoading();
@@ -173,6 +173,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 clearListData();
 
                 pb.setVisibility(View.VISIBLE);
+                if(resultantJSON!=null)
+                    deliverResult(resultantJSON);
+                else
                 forceLoad();
             }
 
@@ -193,8 +196,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         return null;
                     }
                 }
-
-            };
+//Caching
+            @Override
+            public void deliverResult(String data) {
+                resultantJSON=data;
+                super.deliverResult(data);
+            }
+        };
 
     }
 
