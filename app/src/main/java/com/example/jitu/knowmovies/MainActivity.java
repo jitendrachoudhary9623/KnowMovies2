@@ -1,6 +1,11 @@
 package com.example.jitu.knowmovies;
 
+import android.annotation.SuppressLint;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.content.Context;
+
 import android.os.AsyncTask;
 import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
@@ -28,13 +33,17 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String> {
     private RecyclerView mRecyclerView;
     public List<Movie> movieData;
     private QueryBuilder qb;
     MovieAdapter adapter;
     ProgressBar pb;
     String resStr;
+    //LOADERS
+    public Bundle bundle;
+    public static final int LOADER_UID=1;
+    public static final String MOVIE_QUERY_URL="query";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +54,31 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_poster);
         pb = (ProgressBar) findViewById(R.id.pb_main);
 
-        new MovieData().execute(qb.BuildQuery(1));
+      //  new MovieData().execute(qb.BuildQuery(1));
+
+        //Intialize the loader
+        getSupportLoaderManager().initLoader(LOADER_UID,null,this);
+        bundle=new Bundle();
+
+        setupLoader(1);
         setActionBarTitle(R.string.sort_popular);
 
 
     }
+    public void setupLoader(int cat_id)
+    {
+        bundle.putString(MOVIE_QUERY_URL,qb.BuildQuery(cat_id));
+        LoaderManager loaderManager=getSupportLoaderManager();
+        Loader<String> loader=loaderManager.getLoader(LOADER_UID);
+        if(loader==null)
+        {
+            loaderManager.initLoader(LOADER_UID,bundle,this);
+        }else
+        {
+            loaderManager.restartLoader(LOADER_UID,bundle,this);
+        }
+    }
+
 
     public void setupRecyclerView() {
         Context mainActivity = MainActivity.this;
@@ -82,51 +111,36 @@ public class MainActivity extends AppCompatActivity {
         int itemSelected = item.getItemId();
         switch (itemSelected) {
             case R.id.menu_popular:
-               // DisplayToast("Popular Selected");
+                // DisplayToast("Popular Selected");
                 clearRecylcerView();
-                new MovieData().execute(qb.BuildQuery(1));
+                setupLoader(1);
                 setActionBarTitle(R.string.sort_popular);
                 return true;
             case R.id.menu_top:
-              //  DisplayToast("Top Rated Selected");
+                //  DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-                new MovieData().execute(qb.BuildQuery(2));
-                setActionBarTitle(R.string.sort_top);
+               setupLoader(2);
+               setActionBarTitle(R.string.sort_top);
                 return true;
             case R.id.menu_upcoming:
-               // DisplayToast("Top Rated Selected");
+                // DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-                new MovieData().execute(qb.BuildQuery(3));
-                setActionBarTitle(R.string.sort_upcoming);
+               setupLoader(3);
+               setActionBarTitle(R.string.sort_upcoming);
                 return true;
             case R.id.menu_now_playing:
                 // DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-                new MovieData().execute(qb.BuildQuery(4));
-                setActionBarTitle(R.string.sort_now_playing);
+              setupLoader(4);
+              setActionBarTitle(R.string.sort_now_playing);
                 return true;
         }
 
         return false;
     }
-    void setUpMovies(int id)
-    {
-        switch(id)
-        {
-            case 1:
 
-                break;
-            case 2:
 
-                break;
-            case 3:
 
-                break;
-            case 4:
-
-                break;
-        }
-    }
     void setActionBarTitle(int title)
     {
         getSupportActionBar().setTitle(title);
@@ -135,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
     void clearRecylcerView() {
         clearListData();
         adapter.notifyDataSetChanged();
-      //  adapter.notifyDataSetChanged();
+        //  adapter.notifyDataSetChanged();
     }
 
     private void clearListData() {
@@ -144,7 +158,90 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class MovieData extends AsyncTask<String, Void, List<Movie>> {
+    @SuppressLint("StaticFieldLeak")
+    @Override
+    public Loader<String> onCreateLoader(int id, final Bundle args) {
+        final OkHttpClient client = new OkHttpClient();
+
+        return new AsyncTaskLoader<String>(this) {
+
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+
+                clearListData();
+
+                pb.setVisibility(View.VISIBLE);
+                forceLoad();
+            }
+
+            @Override
+            public String loadInBackground() {
+                Request.Builder builder = new Request.Builder();
+
+
+                    builder.url(args.getString(MOVIE_QUERY_URL));
+                    Request request = builder.build();
+
+                    try {
+                        Response response = client.newCall(request).execute();
+                        resStr = response.body().string();
+                        return resStr;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+
+            };
+
+    }
+
+    @Override
+    public void onLoadFinished(Loader<String> loader, String data) {
+        try {
+            createJSON(data);
+            pb.setVisibility(View.INVISIBLE);
+            setupRecyclerView();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<String> loader) {
+
+    }
+
+
+
+    private void createJSON(String JsonResult) throws JSONException {
+        JSONObject root = new JSONObject(JsonResult);
+        JSONArray result = root.getJSONArray(Constants.RESULT);
+//DisplayToast(result.toString());
+        Movie movie;
+        for (int i = 0; i < result.length(); i++) {
+            JSONObject object = result.getJSONObject(i);
+            movie = new Movie();
+            movie.setMoviePoster(appendData(object.getString(Constants.POSTER_PATH)));
+            movie.setOverView(object.getString(Constants.SYNOPSIS));
+            movie.setReleaseDate(object.getString(Constants.RELEASE_DATE));
+            movie.setTitle(object.getString(Constants.TITLE));
+            movie.setBackdropPath(appendData(object.getString(Constants.POSTER_BACKGROUND)));
+            movie.setUserRating(object.getDouble(Constants.VOTE_AVERAGE));
+            movieData.add(movie);
+        }
+    }
+
+    private String appendData(String imgPath) {
+        return new StringBuilder()
+                .append(Constants.BASE_IMG_URL)
+                .append(Constants.IMG_SIZE)
+                .append(imgPath)
+                .toString();
+    }
+
+  /*  class MovieData extends AsyncTask<String, Void, List<Movie>> {
         OkHttpClient client = new OkHttpClient();
 
         @Override
@@ -209,6 +306,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
+*/
 
 }

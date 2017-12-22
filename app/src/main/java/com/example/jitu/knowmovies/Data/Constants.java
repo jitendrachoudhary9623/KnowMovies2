@@ -29,7 +29,7 @@ public class Constants {
     public static final String PAGE_NO="&page=";
     //IMAGE
     public static final String BASE_IMG_URL="http://image.tmdb.org/t/p/";
-    public static final String IMG_SIZE="w780//";
+    public static final String IMG_SIZE="w342//";
 
 
 }
