@@ -1,6 +1,7 @@
 package com.example.jitu.knowmovies;
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -35,16 +36,18 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String> {
-    private RecyclerView mRecyclerView;
+    //saved instance
+    public static final String SAVED_INSTANCE_KEY = "key";
+    public static final int LOADER_UID = 1;
+    public static final String MOVIE_QUERY_URL = "query";
     public List<Movie> movieData;
-    private QueryBuilder qb;
+    //LOADERS
+    public Bundle bundle;
     MovieAdapter adapter;
     ProgressBar pb;
     String resStr;
-    //LOADERS
-    public Bundle bundle;
-    public static final int LOADER_UID=1;
-    public static final String MOVIE_QUERY_URL="query";
+    private RecyclerView mRecyclerView;
+    private QueryBuilder qb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,36 +58,39 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_poster);
         pb = (ProgressBar) findViewById(R.id.pb_main);
 
-      //  new MovieData().execute(qb.BuildQuery(1));
-
+        //  new MovieData().execute(qb.BuildQuery(1));
+        bundle = new Bundle();
         //Intialize the loader
-        getSupportLoaderManager().initLoader(LOADER_UID,null,this);
-        bundle=new Bundle();
 
+        getSupportLoaderManager().initLoader(LOADER_UID, null, this);
         setupLoader(1);
         setActionBarTitle(R.string.sort_popular);
 
 
     }
-    public void setupLoader(int cat_id)
-    {
-        bundle.putString(MOVIE_QUERY_URL,qb.BuildQuery(cat_id));
-        LoaderManager loaderManager=getSupportLoaderManager();
-        Loader<String> loader=loaderManager.getLoader(LOADER_UID);
-        if(loader==null)
-        {
-            loaderManager.initLoader(LOADER_UID,bundle,this);
-        }else
-        {
-            loaderManager.restartLoader(LOADER_UID,bundle,this);
+
+    public void setupLoader(int cat_id) {
+        bundle.putString(MOVIE_QUERY_URL, qb.BuildQuery(cat_id));
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<String> loader = loaderManager.getLoader(LOADER_UID);
+        if (loader == null) {
+            loaderManager.initLoader(LOADER_UID, bundle, this);
+        } else {
+            loaderManager.restartLoader(LOADER_UID, bundle, this);
         }
     }
 
 
     public void setupRecyclerView() {
         Context mainActivity = MainActivity.this;
-        mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns));
+        //   mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns));
+        if (MainActivity.this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns_Potrait));
 
+        } else {
+            mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns_Landscape));
+
+        }
 
         adapter = new MovieAdapter(mainActivity, movieData);
         mRecyclerView.setAdapter(adapter);
@@ -120,20 +126,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.menu_top:
                 //  DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-               setupLoader(2);
-               setActionBarTitle(R.string.sort_top);
+                setupLoader(2);
+                setActionBarTitle(R.string.sort_top);
                 return true;
             case R.id.menu_upcoming:
                 // DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-               setupLoader(3);
-               setActionBarTitle(R.string.sort_upcoming);
+                setupLoader(3);
+                setActionBarTitle(R.string.sort_upcoming);
                 return true;
             case R.id.menu_now_playing:
                 // DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-              setupLoader(4);
-              setActionBarTitle(R.string.sort_now_playing);
+                setupLoader(4);
+                setActionBarTitle(R.string.sort_now_playing);
                 return true;
         }
 
@@ -141,12 +147,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
-
-    void setActionBarTitle(int title)
-    {
+    void setActionBarTitle(int title) {
         getSupportActionBar().setTitle(title);
 
     }
+
     void clearRecylcerView() {
         clearListData();
         adapter.notifyDataSetChanged();
@@ -166,17 +171,20 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         return new AsyncTaskLoader<String>(this) {
             String resultantJSON;
+
             @Override
             protected void onStartLoading() {
                 super.onStartLoading();
 
                 clearListData();
 
-                pb.setVisibility(View.VISIBLE);
-                if(resultantJSON!=null)
+                if (resultantJSON != null)
                     deliverResult(resultantJSON);
-                else
-                forceLoad();
+                else {
+                    pb.setVisibility(View.VISIBLE);
+
+                    forceLoad();
+                }
             }
 
             @Override
@@ -184,22 +192,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 Request.Builder builder = new Request.Builder();
 
 
-                    builder.url(args.getString(MOVIE_QUERY_URL));
-                    Request request = builder.build();
+                builder.url(args.getString(MOVIE_QUERY_URL));
+                Request request = builder.build();
 
-                    try {
-                        Response response = client.newCall(request).execute();
-                        resStr = response.body().string();
-                        return resStr;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
-                    }
+                try {
+                    Response response = client.newCall(request).execute();
+                    resStr = response.body().string();
+                    return resStr;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
                 }
-//Caching
+            }
+
+            //Caching
             @Override
             public void deliverResult(String data) {
-                resultantJSON=data;
+                resultantJSON = data;
                 super.deliverResult(data);
             }
         };
@@ -221,7 +230,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(Loader<String> loader) {
 
     }
-
 
 
     private void createJSON(String JsonResult) throws JSONException {
@@ -320,15 +328,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onSaveInstanceState(Bundle outState) {
 
-        outState.putSerializable("movieData", (Serializable) movieData);
-        DisplayToast("Inside onSave");
+        outState.putSerializable(SAVED_INSTANCE_KEY, (Serializable) movieData);
+        //  DisplayToast("Inside onSave");
         super.onSaveInstanceState(outState);
 
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        movieData= (List<Movie>) savedInstanceState.getSerializable("movieData");
+        movieData.clear();
+        movieData = (List<Movie>) savedInstanceState.getSerializable(SAVED_INSTANCE_KEY);
+        DisplayToast("Inside onRestore");
         setupRecyclerView();
         super.onRestoreInstanceState(savedInstanceState);
 
