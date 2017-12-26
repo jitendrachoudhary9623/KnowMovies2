@@ -69,6 +69,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
     public void setupLoader(int cat_id) {
         bundle.putString(MOVIE_QUERY_URL, qb.BuildQuery(cat_id));
         LoaderManager loaderManager = getSupportLoaderManager();
@@ -83,14 +89,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     public void setupRecyclerView() {
         Context mainActivity = MainActivity.this;
-        //   mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns));
-        if (MainActivity.this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns_Potrait));
+            mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns));
 
-        } else {
-            mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns_Landscape));
-
-        }
 
         adapter = new MovieAdapter(mainActivity, movieData);
         mRecyclerView.setAdapter(adapter);
@@ -336,10 +336,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        movieData.clear();
-        movieData = (List<Movie>) savedInstanceState.getSerializable(SAVED_INSTANCE_KEY);
-        DisplayToast("Inside onRestore");
-        setupRecyclerView();
+
+
+            movieData = (List<Movie>) savedInstanceState.getSerializable(SAVED_INSTANCE_KEY);
+            DisplayToast("Inside onRestore");
+
         super.onRestoreInstanceState(savedInstanceState);
 
     }

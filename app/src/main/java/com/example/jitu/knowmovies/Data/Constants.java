@@ -6,8 +6,7 @@ package com.example.jitu.knowmovies.Data;
 
 public class Constants {
     //Recycler View
-    public static final int numberOfColumns_Potrait = 2;
-    public static final int numberOfColumns_Landscape = 3;
+    public static final int numberOfColumns = 2;
 
     //JSON
     public static final String RESULT = "results";
