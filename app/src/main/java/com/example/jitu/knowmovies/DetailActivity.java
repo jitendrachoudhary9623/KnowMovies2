@@ -30,8 +30,8 @@ public class DetailActivity extends AppCompatActivity {
         userVote = (TextView) findViewById(R.id.movie_user_vote);
         releaseDate = (TextView) findViewById(R.id.movie_release_date);
 
-        movie = (Movie) getIntent().getSerializableExtra("Object");
-        getSupportActionBar().setTitle(movie.getTitle());
+        movie = (Movie) getIntent().getParcelableExtra("Object");
+       getSupportActionBar().setTitle(movie.getTitle());
 
         Picasso.with(context).load(movie.getMoviePoster())
                 .placeholder(R.mipmap.ic_launcher)

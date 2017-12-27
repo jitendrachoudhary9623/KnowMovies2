@@ -61,18 +61,27 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //  new MovieData().execute(qb.BuildQuery(1));
         bundle = new Bundle();
         //Intialize the loader
-
         getSupportLoaderManager().initLoader(LOADER_UID, null, this);
+
         setupLoader(1);
         setActionBarTitle(R.string.sort_popular);
+
 
 
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onPause() {
+        super.onPause();
+        DisplayToast("On PAuse");
+        Bundle b = new Bundle();
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        DisplayToast("On Resume");
     }
 
     public void setupLoader(int cat_id) {
@@ -191,8 +200,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public String loadInBackground() {
                 Request.Builder builder = new Request.Builder();
 
-
-                builder.url(args.getString(MOVIE_QUERY_URL));
+                String movie_url=args.getString(MOVIE_QUERY_URL);
+                if(movie_url==null) return null;
+                builder.url(movie_url);
                 Request request = builder.build();
 
                 try {
