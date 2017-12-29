@@ -2,6 +2,9 @@ package com.example.jitu.knowmovies;
 
 import android.annotation.SuppressLint;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -17,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jitu.knowmovies.Data.Constants;
@@ -35,7 +39,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String> {
+public class MainActivity extends AppCompatActivity {
     //saved instance
     public static final String SAVED_INSTANCE_KEY = "key";
     public static final int LOADER_UID = 1;
@@ -48,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     String resStr;
     private RecyclerView mRecyclerView;
     private QueryBuilder qb;
+    Context mainActivity = MainActivity.this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,49 +62,27 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         movieData = new ArrayList<Movie>();
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_movie_poster);
         pb = (ProgressBar) findViewById(R.id.pb_main);
-
         //  new MovieData().execute(qb.BuildQuery(1));
-        bundle = new Bundle();
-        //Intialize the loader
-        getSupportLoaderManager().initLoader(LOADER_UID, null, this);
-
-        setupLoader(1);
-        setActionBarTitle(R.string.sort_popular);
+        mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns));
 
 
 
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        DisplayToast("On PAuse");
-        Bundle b = new Bundle();
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        DisplayToast("On Resume");
-    }
-
-    public void setupLoader(int cat_id) {
-        bundle.putString(MOVIE_QUERY_URL, qb.BuildQuery(cat_id));
-        LoaderManager loaderManager = getSupportLoaderManager();
-        Loader<String> loader = loaderManager.getLoader(LOADER_UID);
-        if (loader == null) {
-            loaderManager.initLoader(LOADER_UID, bundle, this);
-        } else {
-            loaderManager.restartLoader(LOADER_UID, bundle, this);
+        if(savedInstanceState==null) {
+            setActionBarTitle(R.string.sort_popular);
+            new MovieData().execute(qb.BuildQuery(1));
+        }
+        else
+        {
+            movieData.clear();
+            movieData=null;
+            movieData=savedInstanceState.getParcelableArrayList(SAVED_INSTANCE_KEY);
+            setupRecyclerView(movieData);
         }
     }
 
 
-    public void setupRecyclerView() {
-        Context mainActivity = MainActivity.this;
-            mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns));
 
+    public void setupRecyclerView(List<Movie> movieData) {
 
         adapter = new MovieAdapter(mainActivity, movieData);
         mRecyclerView.setAdapter(adapter);
@@ -129,25 +112,33 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.menu_popular:
                 // DisplayToast("Popular Selected");
                 clearRecylcerView();
-                setupLoader(1);
+                //setupLoader(1);
+                new MovieData().execute(qb.BuildQuery(1));
+
                 setActionBarTitle(R.string.sort_popular);
                 return true;
             case R.id.menu_top:
                 //  DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-                setupLoader(2);
+               // setupLoader(2);
+                new MovieData().execute(qb.BuildQuery(2));
+
                 setActionBarTitle(R.string.sort_top);
                 return true;
             case R.id.menu_upcoming:
                 // DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-                setupLoader(3);
+                new MovieData().execute(qb.BuildQuery(3));
+
+                //   setupLoader(3);
                 setActionBarTitle(R.string.sort_upcoming);
                 return true;
             case R.id.menu_now_playing:
                 // DisplayToast("Top Rated Selected");
                 clearRecylcerView();
-                setupLoader(4);
+               // setupLoader(4);
+                new MovieData().execute(qb.BuildQuery(4));
+
                 setActionBarTitle(R.string.sort_now_playing);
                 return true;
         }
@@ -163,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     void clearRecylcerView() {
         clearListData();
-        adapter.notifyDataSetChanged();
+
         //  adapter.notifyDataSetChanged();
     }
 
@@ -173,92 +164,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-    @SuppressLint("StaticFieldLeak")
-    @Override
-    public Loader<String> onCreateLoader(int id, final Bundle args) {
-        final OkHttpClient client = new OkHttpClient();
-
-        return new AsyncTaskLoader<String>(this) {
-            String resultantJSON;
-
-            @Override
-            protected void onStartLoading() {
-                super.onStartLoading();
-
-                clearListData();
-
-                if (resultantJSON != null)
-                    deliverResult(resultantJSON);
-                else {
-                    pb.setVisibility(View.VISIBLE);
-
-                    forceLoad();
-                }
-            }
-
-            @Override
-            public String loadInBackground() {
-                Request.Builder builder = new Request.Builder();
-
-                String movie_url=args.getString(MOVIE_QUERY_URL);
-                if(movie_url==null) return null;
-                builder.url(movie_url);
-                Request request = builder.build();
-
-                try {
-                    Response response = client.newCall(request).execute();
-                    resStr = response.body().string();
-                    return resStr;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-
-            //Caching
-            @Override
-            public void deliverResult(String data) {
-                resultantJSON = data;
-                super.deliverResult(data);
-            }
-        };
-
-    }
-
-    @Override
-    public void onLoadFinished(Loader<String> loader, String data) {
-        try {
-            createJSON(data);
-            pb.setVisibility(View.INVISIBLE);
-            setupRecyclerView();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<String> loader) {
-
-    }
-
-
-    private void createJSON(String JsonResult) throws JSONException {
-        JSONObject root = new JSONObject(JsonResult);
-        JSONArray result = root.getJSONArray(Constants.RESULT);
-//DisplayToast(result.toString());
-        Movie movie;
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject object = result.getJSONObject(i);
-            movie = new Movie();
-            movie.setMoviePoster(appendData(object.getString(Constants.POSTER_PATH)));
-            movie.setOverView(object.getString(Constants.SYNOPSIS));
-            movie.setReleaseDate(object.getString(Constants.RELEASE_DATE));
-            movie.setTitle(object.getString(Constants.TITLE));
-            movie.setBackdropPath(appendData(object.getString(Constants.POSTER_BACKGROUND)));
-            movie.setUserRating(object.getDouble(Constants.VOTE_AVERAGE));
-            movieData.add(movie);
-        }
-    }
 
     private String appendData(String imgPath) {
         return new StringBuilder()
@@ -268,12 +173,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 .toString();
     }
 
-  /*  class MovieData extends AsyncTask<String, Void, List<Movie>> {
+    class MovieData extends AsyncTask<String, Void, List<Movie>> {
         OkHttpClient client = new OkHttpClient();
 
         @Override
         protected void onPreExecute() {
-
             clearListData();
 
             pb.setVisibility(View.VISIBLE);
@@ -282,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         @Override
         protected List<Movie> doInBackground(String... strings) {
             Request.Builder builder = new Request.Builder();
-            for(int i=0;i<5;i++) {
+            for(int i=0;i<3;i++) {
                 String page=Constants.PAGE_NO+i;
                 builder.url(strings[0]+=page);
                 Request request = builder.build();
@@ -294,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                     createJSON(resStr);
                 } catch (Exception e) {
                     e.printStackTrace();
+
                 }
             }
             return movieData;
@@ -302,11 +207,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         @Override
         protected void onPostExecute(List<Movie> movies) {
             pb.setVisibility(View.INVISIBLE);
-            setupRecyclerView();
+            if(movieData.isEmpty()) {
+                DisplayToast("Unable to Load , Check Your Network");
+
+            }
+            else
+            setupRecyclerView(movieData);
             //  DisplayToast(movieData.get(0).toString());
         }
 
         private void createJSON(String JsonResult) throws JSONException {
+
             JSONObject root = new JSONObject(JsonResult);
             JSONArray result = root.getJSONArray(Constants.RESULT);
 //DisplayToast(result.toString());
@@ -333,25 +244,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
     }
-*/
+
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
 
-        outState.putSerializable(SAVED_INSTANCE_KEY, (Serializable) movieData);
-        //  DisplayToast("Inside onSave");
         super.onSaveInstanceState(outState);
-
+        outState.putParcelableArrayList(SAVED_INSTANCE_KEY, (ArrayList<Movie>) movieData);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-
-
-            movieData = (List<Movie>) savedInstanceState.getSerializable(SAVED_INSTANCE_KEY);
-            DisplayToast("Inside onRestore");
-
         super.onRestoreInstanceState(savedInstanceState);
-
+        movieData=savedInstanceState.getParcelableArrayList(SAVED_INSTANCE_KEY);
     }
 }

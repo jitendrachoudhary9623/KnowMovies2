@@ -22,4 +22,5 @@
         android:id="@+id/pb_main"
         android:layout_gravity = "center"
         android:visibility="invisible"/>
+   
 </FrameLayout>
