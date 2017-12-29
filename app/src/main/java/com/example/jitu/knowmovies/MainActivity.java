@@ -185,6 +185,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected List<Movie> doInBackground(String... strings) {
+            if(!isNetworkConnected())
+                return null;
             Request.Builder builder = new Request.Builder();
             for(int i=0;i<3;i++) {
                 String page=Constants.PAGE_NO+i;
@@ -207,13 +209,19 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<Movie> movies) {
             pb.setVisibility(View.INVISIBLE);
-            if(movieData.isEmpty()) {
-                DisplayToast("Unable to Load , Check Your Network");
-
+            if(movies==null) {
+                DisplayToast("Unable To Connect To Internet");
             }
             else
             setupRecyclerView(movieData);
             //  DisplayToast(movieData.get(0).toString());
+        }
+
+        private boolean isNetworkConnected() {
+            ConnectivityManager connMgr = (ConnectivityManager)
+                    getSystemService(Context.CONNECTIVITY_SERVICE); // 1
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo(); // 2
+            return networkInfo != null && networkInfo.isConnected(); // 3
         }
 
         private void createJSON(String JsonResult) throws JSONException {
