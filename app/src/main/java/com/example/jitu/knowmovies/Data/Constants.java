@@ -9,6 +9,7 @@ public class Constants {
     public static final int numberOfColumns = 2;
 
     //JSON
+    public static final String ID="id";
     public static final String RESULT = "results";
     public static final String TITLE = "title";
     public static final String VOTE_AVERAGE = "vote_average";
@@ -28,6 +29,16 @@ public class Constants {
     //TODO(1) API KEY HERE
     public static final String API_KEY = "7f55d0a9a3def634de5223eb86e74ae4";
     public static final String PAGE_NO = "&page=";
+
+    //Trailers
+    public static final String VIDEOS="/videos";
+    public static final String TRAILER_NAME="name";
+    public static final String TRAILER_KEY="key";
+    public static final String YOUTUBE_IMG_URL="http://img.youtube.com/vi/";
+    public static final String YOUTUBE_THUMNAIL_IMG_URL="/0.jpg";
+    public static final String YOUTUBE_URL="http://www.youtube.com/watch?v=";
+
+
     //IMAGE
     public static final String BASE_IMG_URL = "http://image.tmdb.org/t/p/";
     public static final String IMG_SIZE = "w342//";

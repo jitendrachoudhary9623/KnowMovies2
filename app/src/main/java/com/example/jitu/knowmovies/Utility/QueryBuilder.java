@@ -41,4 +41,17 @@ public class QueryBuilder {
         apiUrl.append(Constants.PAGE_NO);
         return apiUrl.toString();
     }
+//https://api.themoviedb.org/3/movie/181808/videos?api_key=7f55d0a9a3def634de5223eb86e74ae4
+    public static String getTrailer(long id)
+    {
+        StringBuilder apiUrl=new StringBuilder();
+        apiUrl.append(Constants.API_URL);
+        apiUrl.append(id);
+        apiUrl.append(Constants.VIDEOS);
+        apiUrl.append(Constants.API);
+        apiUrl.append(Constants.API_KEY);
+
+        return apiUrl.toString();
+
+    }
 }

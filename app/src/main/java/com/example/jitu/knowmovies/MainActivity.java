@@ -233,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < result.length(); i++) {
                 JSONObject object = result.getJSONObject(i);
                 movie = new Movie();
+                movie.setId(object.getLong(Constants.ID));
                 movie.setMoviePoster(appendData(object.getString(Constants.POSTER_PATH)));
                 movie.setOverView(object.getString(Constants.SYNOPSIS));
                 movie.setReleaseDate(object.getString(Constants.RELEASE_DATE));

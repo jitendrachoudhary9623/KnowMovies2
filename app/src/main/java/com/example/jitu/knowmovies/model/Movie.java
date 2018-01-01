@@ -16,6 +16,8 @@ import java.io.Serializable;
     release date
     */
 public class Movie implements Parcelable {
+
+
     public String getTitle() {
         return title;
     }
@@ -56,6 +58,14 @@ public class Movie implements Parcelable {
         this.releaseDate = releaseDate;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getBackdropPath() {
         return BackdropPath;
     }
@@ -64,27 +74,31 @@ public class Movie implements Parcelable {
         BackdropPath = backdropPath;
     }
 
-    String title;
-    String moviePoster;
-    String overView;
-    double userRating;
-    String releaseDate;
-
-    String BackdropPath;
-    public Movie()
-    {
-
+    public static Creator<Movie> getCREATOR() {
+        return CREATOR;
     }
 
-    public Movie(String title, String moviePoster, String overView, double userRating, String releaseDate, String backdropPath) {
+    public Movie(String title, String moviePoster, String overView, double userRating, String releaseDate, long id, String backdropPath) {
         this.title = title;
         this.moviePoster = moviePoster;
         this.overView = overView;
         this.userRating = userRating;
         this.releaseDate = releaseDate;
+        this.id = id;
         BackdropPath = backdropPath;
     }
 
+    String title;
+    String moviePoster;
+    String overView;
+    double userRating;
+    String releaseDate;
+    long id;
+    String BackdropPath;
+    public Movie()
+    {
+
+    }
 
     protected Movie(Parcel in) {
         title = in.readString();
@@ -92,6 +106,7 @@ public class Movie implements Parcelable {
         overView = in.readString();
         userRating = in.readDouble();
         releaseDate = in.readString();
+        id = in.readLong();
         BackdropPath = in.readString();
     }
 
@@ -102,6 +117,7 @@ public class Movie implements Parcelable {
         dest.writeString(overView);
         dest.writeDouble(userRating);
         dest.writeString(releaseDate);
+        dest.writeLong(id);
         dest.writeString(BackdropPath);
     }
 
