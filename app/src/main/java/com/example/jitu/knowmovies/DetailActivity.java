@@ -2,11 +2,15 @@ package com.example.jitu.knowmovies;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +43,8 @@ public class DetailActivity extends AppCompatActivity {
     RecyclerView rv_trailer;
     TrailerAdapter Trailer_adapter;
     List<Trailer> trailers;
+    ProgressBar pb_trailers;
+    public static final String TRAILER_LIST="trailer";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +55,7 @@ public class DetailActivity extends AppCompatActivity {
         movieOverview = (TextView) findViewById(R.id.movie_overview);
         userVote = (TextView) findViewById(R.id.movie_user_vote);
         releaseDate = (TextView) findViewById(R.id.movie_release_date);
+        pb_trailers=(ProgressBar)findViewById(R.id.pb_trailers);
         rv_trailer=(RecyclerView)findViewById(R.id.rv_trailers);
         rv_trailer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));        trailers=new ArrayList<Trailer>();
 
@@ -69,15 +76,44 @@ public class DetailActivity extends AppCompatActivity {
         userVote.setText("Ratings\n" + movie.getUserRating() + "/10");
         releaseDate.setText("Release Date \n" + movie.getReleaseDate());
         QueryBuilder qb = new QueryBuilder();
-        new FetchTrailers().execute(qb.getTrailer(movie.getId()));
+        if(savedInstanceState==null)
+        {
+            new FetchTrailers().execute(qb.getTrailer(movie.getId()));
+        }
+        else
+        {
+            if(!trailers.isEmpty()) {
+                trailers.clear();
+                trailers=null;
+            }
+            trailers=new ArrayList<Trailer>();
+                trailers=savedInstanceState.getParcelableArrayList(TRAILER_LIST);
+           //setupRecycler();
+        }
     }
 
     public void setupRecycler()
     {
-        Toast.makeText(DetailActivity.this,trailers.get(0).getYOUTUBE_TITLE(),Toast.LENGTH_LONG).show();
 
         Trailer_adapter = new TrailerAdapter(DetailActivity.this,trailers);
         rv_trailer.setAdapter(Trailer_adapter);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(TRAILER_LIST, (ArrayList<Trailer>) trailers);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(!trailers.isEmpty())
+        {
+            trailers.clear();
+        }
+        trailers=savedInstanceState.getParcelableArrayList(TRAILER_LIST);
+        setupRecycler();
     }
 
     public class FetchTrailers extends AsyncTask<String,Void,List<Trailer>> {
@@ -86,6 +122,7 @@ public class DetailActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            pb_trailers.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -113,6 +150,8 @@ public class DetailActivity extends AppCompatActivity {
         protected void onPostExecute(List<Trailer> list) {
             super.onPostExecute(list);
             //return trailers;
+            pb_trailers.setVisibility(View.INVISIBLE);
+
             setupRecycler();
         }
 

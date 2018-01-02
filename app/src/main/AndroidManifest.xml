@@ -21,6 +21,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".DetailActivity"
+            android:configChanges="orientation|screenSize"
             android:parentActivityName="com.example.jitu.knowmovies.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
