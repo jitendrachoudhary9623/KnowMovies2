@@ -37,6 +37,12 @@ public class Constants {
     public static final String YOUTUBE_IMG_URL="http://img.youtube.com/vi/";
     public static final String YOUTUBE_THUMNAIL_IMG_URL="/0.jpg";
     public static final String YOUTUBE_URL="http://www.youtube.com/watch?v=";
+    public static final String REVIEW="/reviews";
+
+    //Reviews
+    public static final String AUTHOR="author";
+    public static final String CONTENT="content";
+    public static final String REVIEW_URL="url";
 
 
     //IMAGE

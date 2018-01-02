@@ -54,4 +54,16 @@ public class QueryBuilder {
         return apiUrl.toString();
 
     }
+    public static String getReviewr(long id)
+    {
+        StringBuilder apiUrl=new StringBuilder();
+        apiUrl.append(Constants.API_URL);
+        apiUrl.append(id);
+        apiUrl.append(Constants.REVIEW);
+        apiUrl.append(Constants.API);
+        apiUrl.append(Constants.API_KEY);
+
+        return apiUrl.toString();
+
+    }
 }
