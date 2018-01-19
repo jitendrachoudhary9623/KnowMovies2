@@ -1,4 +1,7 @@
 # KnowMovies2
+# Enter API KEY IN Data/Constants 
+# for the variabe String API_KEY = "";  
+# If Difficulty in adding I have added a TODO(1) Comment 
   This Android Application gets the data from the movieDB API and Displays the data on the mobile device.
   (Implements <bold>Loaders</bold>)
   The User can see the details of 
@@ -15,10 +18,13 @@
   <li>
    Now Playing Movies
   </li>
+  <li>
+   Favorites Movies
+  </li>
 </ol>
   
      
-    
+
   
   ### Now Playing Movies
  
