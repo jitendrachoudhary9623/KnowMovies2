@@ -2,6 +2,8 @@ package com.example.jitu.knowmovies;
 
 import android.annotation.SuppressLint;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Parcelable;
@@ -25,6 +27,8 @@ import android.widget.Toast;
 
 import com.example.jitu.knowmovies.Data.Constants;
 import com.example.jitu.knowmovies.Utility.QueryBuilder;
+import com.example.jitu.knowmovies.db.FavoriteContract;
+import com.example.jitu.knowmovies.db.MovieHelper;
 import com.example.jitu.knowmovies.model.Movie;
 
 import org.json.JSONArray;
@@ -33,6 +37,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -141,11 +146,48 @@ public class MainActivity extends AppCompatActivity {
 
                 setActionBarTitle(R.string.sort_now_playing);
                 return true;
+
+            case R.id.menu_favorite:
+                clearRecylcerView();
+new FavoriteMovie().execute();
+setActionBarTitle(R.string.sort_favorites);
+                return true;
         }
 
         return false;
     }
 
+    void showFavorites()
+    {
+        MovieHelper helper=new MovieHelper(this);
+        SQLiteDatabase database=helper.getReadableDatabase();
+
+        Cursor cursor=database.query(FavoriteContract.FavoriteEntry.TABLE_NAME,null,null,null,null,null,null);
+        clearListData();
+
+        Movie movie=null;
+        if (cursor.getCount() > 0) {
+            for (int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToPosition(i);
+                movie=new Movie();
+                movie.setId(cursor.getLong(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_ID)));
+                movie.setBackdropPath(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_BACKDROP)));
+                movie.setUserRating(cursor.getDouble(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_RATING)));
+                movie.setTitle(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_TITLE)));
+                movie.setMoviePoster(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_POSTER)));
+                movie.setReleaseDate(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_RELEASE_DATE)));
+                movie.setOverView(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_OVERVIEW)));
+                movieData.add(movie);
+            }
+            setupRecyclerView(movieData);
+
+        }
+        else
+        {
+            DisplayToast("No Favorites");
+        }
+
+    }
 
     void setActionBarTitle(int title) {
         getSupportActionBar().setTitle(title);
@@ -173,6 +215,60 @@ public class MainActivity extends AppCompatActivity {
                 .toString();
     }
 
+    class FavoriteMovie extends AsyncTask<Void,Void,List<Movie>>
+    {
+
+        @Override
+        protected void onPreExecute() {
+            clearListData();
+
+            pb.setVisibility(View.VISIBLE);        }
+
+        @Override
+        protected List<Movie> doInBackground(Void... voids) {
+            showFavorites();
+            return movieData;
+        }
+
+        @Override
+        protected void onPostExecute(List<Movie> movieList) {
+            pb.setVisibility(View.INVISIBLE);
+            if(movieList==null) {
+                DisplayToast("Unable To Connect To Internet");
+            }
+            else
+                setupRecyclerView(movieData);
+        }
+
+        void showFavorites()
+        {
+            MovieHelper helper=new MovieHelper(MainActivity.this);
+            SQLiteDatabase database=helper.getReadableDatabase();
+
+            Cursor cursor=database.query(FavoriteContract.FavoriteEntry.TABLE_NAME,null,null,null,null,null,null);
+           // clearListData();
+
+            Movie movie=null;
+            if (cursor.getCount() > 0) {
+                for (int i = 0; i < cursor.getCount(); i++) {
+                    cursor.moveToPosition(i);
+                    movie=new Movie();
+                    movie.setId(cursor.getLong(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_ID)));
+                    movie.setBackdropPath(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_BACKDROP)));
+                    movie.setUserRating(cursor.getDouble(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_RATING)));
+                    movie.setTitle(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_TITLE)));
+                    movie.setMoviePoster(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_POSTER)));
+                    movie.setReleaseDate(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_RELEASE_DATE)));
+                    movie.setOverView(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_OVERVIEW)));
+                    movieData.add(movie);
+                }
+
+            }
+
+
+        }
+
+    }
     class MovieData extends AsyncTask<String, Void, List<Movie>> {
         OkHttpClient client = new OkHttpClient();
 

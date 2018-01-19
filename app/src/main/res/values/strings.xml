@@ -4,6 +4,8 @@
     <string name="sort_top">Top Rated Movies</string>
     <string name="sort_upcoming">Upcoming Movies</string>
     <string name="sort_now_playing">Now Playing Movies</string>
+    <string name="sort_favorites">Favorite Movies</string>
+
     <string name="title">Title</string>
     <string name="overview">Plot</string>
     <string name="Rating">User Rating</string>

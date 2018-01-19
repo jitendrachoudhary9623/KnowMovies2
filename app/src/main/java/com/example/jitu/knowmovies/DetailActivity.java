@@ -1,21 +1,29 @@
 package com.example.jitu.knowmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jitu.knowmovies.Data.Constants;
 import com.example.jitu.knowmovies.Utility.QueryBuilder;
+import com.example.jitu.knowmovies.db.FavoriteContract;
+import com.example.jitu.knowmovies.db.MovieHelper;
 import com.example.jitu.knowmovies.model.Movie;
 import com.example.jitu.knowmovies.model.Review;
 import com.example.jitu.knowmovies.model.Trailer;
@@ -32,7 +40,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity implements View.OnClickListener {
     Movie movie;
     ImageView movieBackground;
     ImageView moviePoster;
@@ -48,9 +56,17 @@ public class DetailActivity extends AppCompatActivity {
     List<Trailer> trailers;
     List<Review> reviews;
     ProgressBar pb_trailers;
+    FloatingActionButton fab;
+
+    SharedPreferences sharedpreferences;
+    SharedPreferences.Editor editor;
+    public static final String mypreference = "mypref";
+
     public static final String TRAILER_LIST = "trailer";
     public static final String REVIEW_LIST = "review";
 
+    MovieHelper helper=new MovieHelper(this);
+    SQLiteDatabase database;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +78,7 @@ public class DetailActivity extends AppCompatActivity {
         userVote = (TextView) findViewById(R.id.movie_user_vote);
         releaseDate = (TextView) findViewById(R.id.movie_release_date);
         pb_trailers = (ProgressBar) findViewById(R.id.pb_trailers);
-
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         rv_trailer = (RecyclerView) findViewById(R.id.rv_trailers);
         rv_trailer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         trailers = new ArrayList<Trailer>();
@@ -72,6 +88,10 @@ public class DetailActivity extends AppCompatActivity {
         reviews = new ArrayList<Review>();
         movie = (Movie) getIntent().getParcelableExtra("Object");
         getSupportActionBar().setTitle(movie.getTitle());
+
+        sharedpreferences=getApplicationContext().getSharedPreferences(mypreference,MODE_PRIVATE);
+
+
 
         Picasso.with(context).load(movie.getMoviePoster())
                 .placeholder(R.mipmap.ic_launcher)
@@ -100,6 +120,18 @@ public class DetailActivity extends AppCompatActivity {
             trailers = savedInstanceState.getParcelableArrayList(TRAILER_LIST);
             reviews = savedInstanceState.getParcelableArrayList(REVIEW_LIST);
         }
+        if(sharedpreferences.contains(""+movie.getId()))
+        {
+            fab.setImageResource(R.drawable.movie_saved);
+        }
+        else
+        {
+
+            fab.setImageResource(R.drawable.movie_unsaved);
+
+
+        }
+
     }
 
     public void setupYouTubeRecycler() {
@@ -135,6 +167,39 @@ public class DetailActivity extends AppCompatActivity {
         reviews = savedInstanceState.getParcelableArrayList(REVIEW_LIST);
         setupYouTubeRecycler();
         setupReviewRecycler();
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch(v.getId())
+        {
+            case R.id.fab:
+                if(sharedpreferences.contains(""+movie.getId()))
+                {
+                    removeFromDb();
+                    editor = sharedpreferences.edit();
+                    editor.remove(""+movie.getId());
+
+                    fab.setImageResource(R.drawable.movie_unsaved);
+                }
+                else
+                {
+                    saveToDb();
+                    editor = sharedpreferences.edit();
+                    editor.putBoolean(""+movie.getId(), true);
+                    editor.commit();
+                    fab.setImageResource(R.drawable.movie_saved);
+
+
+                }
+                break;
+        }
+
     }
 
     public class FetchTrailers extends AsyncTask<String, Void, List<Trailer>> {
@@ -254,4 +319,32 @@ public class DetailActivity extends AppCompatActivity {
 
     }
 
+
+    public void saveToDb()
+    {
+        database=helper.getWritableDatabase();
+        ContentValues cv=new ContentValues();
+
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_POSTER,movie.getMoviePoster());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_TITLE,movie.getTitle());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_OVERVIEW,movie.getOverView());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_RATING,movie.getUserRating());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_RELEASE_DATE,movie.getReleaseDate());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_BACKDROP,movie.getBackdropPath());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_ID,movie.getId());
+        database.insert(FavoriteContract.FavoriteEntry.TABLE_NAME,
+                null, cv);
+        database.close();
+        Toast.makeText(DetailActivity.this,"Is Checked ",Toast.LENGTH_LONG).show();
+
+
+    }
+    public void removeFromDb()
+    {
+        database=helper.getWritableDatabase();
+        database.delete(FavoriteContract.FavoriteEntry.TABLE_NAME, FavoriteContract.FavoriteEntry.MOVIE_ID+"="+movie.getId(),null);
+        database.close();
+        Toast.makeText(DetailActivity.this,"Is UnChecked ",Toast.LENGTH_LONG).show();
+
+    }
 }

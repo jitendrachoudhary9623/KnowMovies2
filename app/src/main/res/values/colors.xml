@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#F44336</color>
-    <color name="colorPrimaryDark">#D50000</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimaryDark">#d50000</color>
+    <color name="colorAccent">#FAFAFA</color>
     <color name="rv_text_background">#F44336</color>
     <color name="rv_text_color">#FAFAFA</color>
     <color name="black">#263238</color>
