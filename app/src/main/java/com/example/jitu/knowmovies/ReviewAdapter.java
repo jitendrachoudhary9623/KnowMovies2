@@ -46,22 +46,36 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
     class ReviewViewHolder extends RecyclerView.ViewHolder {
         TextView AuthorText;
         TextView ContentText;
+        TextView ContentTextMore;
         public ReviewViewHolder(View itemView) {
             super(itemView);
             AuthorText=(TextView)itemView.findViewById(R.id.review_author);
             ContentText=(TextView)itemView.findViewById(R.id.review_comment);
+            ContentTextMore=(TextView)itemView.findViewById(R.id.review_comment_more);
+
         }
         public void bind(final int position)
         {
             AuthorText.setText(reviewList.get(position).getAuthor());
             ContentText.setText(reviewList.get(position).getContent());
+            ContentTextMore.setText(reviewList.get(position).getContent());
 
             ContentText.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    /*Intent i = new Intent(Intent.ACTION_VIEW);
                     i.setData(Uri.parse(reviewList.get(position).getUrl()));
-                    mContext.startActivity(i);
+                    mContext.startActivity(i);*/
+                    ContentText.setVisibility(View.INVISIBLE);
+                    ContentTextMore.setVisibility(View.VISIBLE);
+                }
+            });
+            ContentTextMore.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    ContentTextMore.setVisibility(View.INVISIBLE);
+                    ContentText.setVisibility(View.VISIBLE);
                 }
             });
         }

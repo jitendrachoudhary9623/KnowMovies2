@@ -1,5 +1,6 @@
 package com.example.jitu.knowmovies.db;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
@@ -8,17 +9,12 @@ import android.provider.BaseColumns;
 
 public class FavoriteContract {
 
+    public static final String AUTHORITY="com.example.jitu.knowmovies";
+    public static final Uri BASE_CONTENT_URI=Uri.parse("content://"+AUTHORITY);
+    public static final String PATH="MOVIES";
     public static class FavoriteEntry implements BaseColumns{
-        /*
 
-    String title;
-    String moviePoster;
-    String overView;
-    double userRating;
-    String releaseDate;
-    long id;
-    String BackdropPath;
-         */
+        public static final Uri CONTENT_URI=BASE_CONTENT_URI.buildUpon().appendPath(PATH).build();
         public static final String TABLE_NAME="MOVIES";
         public static final String MOVIE_POSTER="movie_poster";
         public static final String MOVIE_OVERVIEW="movie_overview";

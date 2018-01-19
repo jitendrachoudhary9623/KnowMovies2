@@ -3,27 +3,23 @@ package com.example.jitu.knowmovies;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Parcelable;
-import android.os.PersistableBundle;
+
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jitu.knowmovies.Data.Constants;
 import com.example.jitu.knowmovies.Utility.QueryBuilder;
 import com.example.jitu.knowmovies.db.FavoriteContract;
-import com.example.jitu.knowmovies.db.MovieHelper;
 import com.example.jitu.knowmovies.model.Movie;
 import com.example.jitu.knowmovies.model.Review;
 import com.example.jitu.knowmovies.model.Trailer;
@@ -65,8 +61,6 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     public static final String TRAILER_LIST = "trailer";
     public static final String REVIEW_LIST = "review";
 
-    MovieHelper helper=new MovieHelper(this);
-    SQLiteDatabase database;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,7 +135,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     public void setupReviewRecycler() {
-        Toast.makeText(DetailActivity.this, "" + reviews.size(), Toast.LENGTH_LONG).show();
+     //   Toast.makeText(DetailActivity.this, "" + reviews.size(), Toast.LENGTH_LONG).show();
         reviewAdapter = new ReviewAdapter(DetailActivity.this, reviews);
         rv_reviews.setAdapter(reviewAdapter);
     }
@@ -322,8 +316,8 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
 
     public void saveToDb()
     {
-        database=helper.getWritableDatabase();
         ContentValues cv=new ContentValues();
+        Uri uri=FavoriteContract.FavoriteEntry.CONTENT_URI;
 
         cv.put(FavoriteContract.FavoriteEntry.MOVIE_POSTER,movie.getMoviePoster());
         cv.put(FavoriteContract.FavoriteEntry.MOVIE_TITLE,movie.getTitle());
@@ -332,19 +326,18 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         cv.put(FavoriteContract.FavoriteEntry.MOVIE_RELEASE_DATE,movie.getReleaseDate());
         cv.put(FavoriteContract.FavoriteEntry.MOVIE_BACKDROP,movie.getBackdropPath());
         cv.put(FavoriteContract.FavoriteEntry.MOVIE_ID,movie.getId());
-        database.insert(FavoriteContract.FavoriteEntry.TABLE_NAME,
-                null, cv);
-        database.close();
-        Toast.makeText(DetailActivity.this,"Is Checked ",Toast.LENGTH_LONG).show();
+        getContentResolver().insert(uri,
+                 cv);
+        Toast.makeText(DetailActivity.this,"Movie Saved",Toast.LENGTH_LONG).show();
 
 
     }
     public void removeFromDb()
     {
-        database=helper.getWritableDatabase();
-        database.delete(FavoriteContract.FavoriteEntry.TABLE_NAME, FavoriteContract.FavoriteEntry.MOVIE_ID+"="+movie.getId(),null);
-        database.close();
-        Toast.makeText(DetailActivity.this,"Is UnChecked ",Toast.LENGTH_LONG).show();
+        Uri uri=Uri.parse(FavoriteContract.FavoriteEntry.CONTENT_URI+"/"+movie.getId());
+
+        getContentResolver().delete(uri, FavoriteContract.FavoriteEntry.MOVIE_ID+"="+movie.getId(),null);
+        Toast.makeText(DetailActivity.this,"Movie Removed ",Toast.LENGTH_LONG).show();
 
     }
 }

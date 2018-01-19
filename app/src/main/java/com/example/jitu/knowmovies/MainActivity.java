@@ -1,11 +1,12 @@
 package com.example.jitu.knowmovies;
 
-import android.annotation.SuppressLint;
+
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -13,7 +14,6 @@ import android.support.v4.content.Loader;
 import android.content.Context;
 
 import android.os.AsyncTask;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -22,7 +22,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jitu.knowmovies.Data.Constants;
@@ -35,9 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -70,6 +67,12 @@ public class MainActivity extends AppCompatActivity {
         //  new MovieData().execute(qb.BuildQuery(1));
         mRecyclerView.setLayoutManager(new GridLayoutManager(mainActivity, Constants.numberOfColumns));
 
+        if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            mRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        }
+        else{
+            mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        }
 
 
         if(savedInstanceState==null) {
@@ -157,37 +160,6 @@ setActionBarTitle(R.string.sort_favorites);
         return false;
     }
 
-    void showFavorites()
-    {
-        MovieHelper helper=new MovieHelper(this);
-        SQLiteDatabase database=helper.getReadableDatabase();
-
-        Cursor cursor=database.query(FavoriteContract.FavoriteEntry.TABLE_NAME,null,null,null,null,null,null);
-        clearListData();
-
-        Movie movie=null;
-        if (cursor.getCount() > 0) {
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.moveToPosition(i);
-                movie=new Movie();
-                movie.setId(cursor.getLong(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_ID)));
-                movie.setBackdropPath(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_BACKDROP)));
-                movie.setUserRating(cursor.getDouble(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_RATING)));
-                movie.setTitle(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_TITLE)));
-                movie.setMoviePoster(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_POSTER)));
-                movie.setReleaseDate(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_RELEASE_DATE)));
-                movie.setOverView(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.MOVIE_OVERVIEW)));
-                movieData.add(movie);
-            }
-            setupRecyclerView(movieData);
-
-        }
-        else
-        {
-            DisplayToast("No Favorites");
-        }
-
-    }
 
     void setActionBarTitle(int title) {
         getSupportActionBar().setTitle(title);
@@ -196,8 +168,7 @@ setActionBarTitle(R.string.sort_favorites);
 
     void clearRecylcerView() {
         clearListData();
-
-        //  adapter.notifyDataSetChanged();
+        //adapter.notifyDataSetChanged();
     }
 
     private void clearListData() {
@@ -242,10 +213,10 @@ setActionBarTitle(R.string.sort_favorites);
 
         void showFavorites()
         {
-            MovieHelper helper=new MovieHelper(MainActivity.this);
-            SQLiteDatabase database=helper.getReadableDatabase();
+            Uri uri=FavoriteContract.FavoriteEntry.CONTENT_URI;
 
-            Cursor cursor=database.query(FavoriteContract.FavoriteEntry.TABLE_NAME,null,null,null,null,null,null);
+
+            Cursor cursor=getContentResolver().query(uri,null,null,null,null,null);
            // clearListData();
 
             Movie movie=null;
@@ -363,4 +334,6 @@ setActionBarTitle(R.string.sort_favorites);
         super.onRestoreInstanceState(savedInstanceState);
         movieData=savedInstanceState.getParcelableArrayList(SAVED_INSTANCE_KEY);
     }
+
+
 }

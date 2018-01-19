@@ -71,7 +71,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MoviePoster>
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Toast.makeText(mContext, "Recycle Click" + position, Toast.LENGTH_SHORT).show();
+                 //   Toast.makeText(mContext, "Recycle Click" + position, Toast.LENGTH_SHORT).show();
                     Intent in = new Intent(mContext, DetailActivity.class);
                     Movie movie = mDataSet.get(position);
                     in.putExtra("Object", movie);
