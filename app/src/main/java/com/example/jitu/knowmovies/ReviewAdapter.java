@@ -47,6 +47,9 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
         TextView AuthorText;
         TextView ContentText;
         TextView ContentTextMore;
+        TextView read_more;
+        TextView read_less;
+
         public ReviewViewHolder(View itemView) {
             super(itemView);
             AuthorText=(TextView)itemView.findViewById(R.id.review_author);
@@ -59,6 +62,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
             AuthorText.setText(reviewList.get(position).getAuthor());
             ContentText.setText(reviewList.get(position).getContent());
             ContentTextMore.setText(reviewList.get(position).getContent());
+            ContentTextMore.setVisibility(View.GONE);
 
             ContentText.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -66,7 +70,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
                     /*Intent i = new Intent(Intent.ACTION_VIEW);
                     i.setData(Uri.parse(reviewList.get(position).getUrl()));
                     mContext.startActivity(i);*/
-                    ContentText.setVisibility(View.INVISIBLE);
+                    ContentText.setVisibility(View.GONE);
                     ContentTextMore.setVisibility(View.VISIBLE);
                 }
             });
@@ -74,7 +78,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
                 @Override
                 public void onClick(View v) {
 
-                    ContentTextMore.setVisibility(View.INVISIBLE);
+                    ContentTextMore.setVisibility(View.GONE);
                     ContentText.setVisibility(View.VISIBLE);
                 }
             });

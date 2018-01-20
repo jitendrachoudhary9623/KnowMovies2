@@ -10,5 +10,7 @@
     <string name="overview">Plot</string>
     <string name="Rating">User Rating</string>
     <string name="release_date">Release Date</string>
+    <string name="Movie_remove">Movie Removed</string>
+    <string name="Movie_Saved">Movie Saved</string>
 </resources>
 

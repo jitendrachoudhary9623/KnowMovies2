@@ -11,7 +11,7 @@ import com.example.jitu.knowmovies.db.FavoriteContract.FavoriteEntry;
 public class MovieHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME="movies.db";
-    public static final int DATABASE_VERSION=6;
+    public static final int DATABASE_VERSION=1;
 
     public MovieHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

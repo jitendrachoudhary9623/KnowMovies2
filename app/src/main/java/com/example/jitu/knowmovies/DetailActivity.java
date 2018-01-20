@@ -6,7 +6,10 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 
+import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -37,6 +40,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class DetailActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final String mypreference = "mypref";
+    public static final String TRAILER_LIST = "trailer";
+    public static final String REVIEW_LIST = "review";
     Movie movie;
     ImageView movieBackground;
     ImageView moviePoster;
@@ -53,13 +59,9 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     List<Review> reviews;
     ProgressBar pb_trailers;
     FloatingActionButton fab;
-
+    CoordinatorLayout coordinatorLayout;
     SharedPreferences sharedpreferences;
     SharedPreferences.Editor editor;
-    public static final String mypreference = "mypref";
-
-    public static final String TRAILER_LIST = "trailer";
-    public static final String REVIEW_LIST = "review";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +76,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         pb_trailers = (ProgressBar) findViewById(R.id.pb_trailers);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         rv_trailer = (RecyclerView) findViewById(R.id.rv_trailers);
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.contentPanel);
         rv_trailer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         trailers = new ArrayList<Trailer>();
 
@@ -83,8 +86,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         movie = (Movie) getIntent().getParcelableExtra("Object");
         getSupportActionBar().setTitle(movie.getTitle());
 
-        sharedpreferences=getApplicationContext().getSharedPreferences(mypreference,MODE_PRIVATE);
-
+        sharedpreferences = getApplicationContext().getSharedPreferences(mypreference, MODE_PRIVATE);
 
 
         Picasso.with(context).load(movie.getMoviePoster())
@@ -105,21 +107,20 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
             new FetchTrailers().execute(qb.getTrailer(movie.getId()));
             new FetchReviews().execute(qb.getReviewr(movie.getId()));
         } else {
-            if (!trailers.isEmpty()) {
-                trailers.clear();
-            }
-            if (!reviews.isEmpty()) {
-                reviews.clear();
-            }
+
+            trailers = null;
+
             trailers = savedInstanceState.getParcelableArrayList(TRAILER_LIST);
             reviews = savedInstanceState.getParcelableArrayList(REVIEW_LIST);
+            Snackbar.make(coordinatorLayout, "Rotated", Snackbar.LENGTH_LONG).show();
+
+            setupYouTubeRecycler();
+            setupReviewRecycler();
+
         }
-        if(sharedpreferences.contains(""+movie.getId()))
-        {
+        if (sharedpreferences.contains("" + movie.getId())) {
             fab.setImageResource(R.drawable.movie_saved);
-        }
-        else
-        {
+        } else {
 
             fab.setImageResource(R.drawable.movie_unsaved);
 
@@ -135,7 +136,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     public void setupReviewRecycler() {
-     //   Toast.makeText(DetailActivity.this, "" + reviews.size(), Toast.LENGTH_LONG).show();
+        //   Toast.makeText(DetailActivity.this, "" + reviews.size(), Toast.LENGTH_LONG).show();
         reviewAdapter = new ReviewAdapter(DetailActivity.this, reviews);
         rv_reviews.setAdapter(reviewAdapter);
     }
@@ -151,16 +152,11 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (!trailers.isEmpty()) {
-            trailers.clear();
-        }
+
         trailers = savedInstanceState.getParcelableArrayList(TRAILER_LIST);
-        if (!reviews.isEmpty()) {
-            reviews.clear();
-        }
+
         reviews = savedInstanceState.getParcelableArrayList(REVIEW_LIST);
-        setupYouTubeRecycler();
-        setupReviewRecycler();
+
     }
 
     @Override
@@ -170,22 +166,18 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        switch(v.getId())
-        {
+        switch (v.getId()) {
             case R.id.fab:
-                if(sharedpreferences.contains(""+movie.getId()))
-                {
+                if (sharedpreferences.contains("" + movie.getId())) {
                     removeFromDb();
                     editor = sharedpreferences.edit();
-                    editor.remove(""+movie.getId());
-
+                    editor.remove("" + movie.getId());
+                    editor.apply();
                     fab.setImageResource(R.drawable.movie_unsaved);
-                }
-                else
-                {
+                } else {
                     saveToDb();
                     editor = sharedpreferences.edit();
-                    editor.putBoolean(""+movie.getId(), true);
+                    editor.putBoolean("" + movie.getId(), true);
                     editor.commit();
                     fab.setImageResource(R.drawable.movie_saved);
 
@@ -194,6 +186,31 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
                 break;
         }
 
+    }
+
+    public void saveToDb() {
+        ContentValues cv = new ContentValues();
+        Uri uri = FavoriteContract.FavoriteEntry.CONTENT_URI;
+
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_POSTER, movie.getMoviePoster());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_TITLE, movie.getTitle());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_OVERVIEW, movie.getOverView());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_RATING, movie.getUserRating());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_RELEASE_DATE, movie.getReleaseDate());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_BACKDROP, movie.getBackdropPath());
+        cv.put(FavoriteContract.FavoriteEntry.MOVIE_ID, movie.getId());
+        getContentResolver().insert(uri,
+                cv);
+        Snackbar.make(coordinatorLayout, getString(R.string.Movie_Saved), Snackbar.LENGTH_LONG).show();
+
+
+    }
+
+    public void removeFromDb() {
+        Uri uri = Uri.parse(FavoriteContract.FavoriteEntry.CONTENT_URI + "/" + movie.getId());
+
+        getContentResolver().delete(uri, FavoriteContract.FavoriteEntry.MOVIE_ID + "=" + movie.getId(), null);
+        Snackbar.make(coordinatorLayout, getString(R.string.Movie_remove), Snackbar.LENGTH_LONG).show();
     }
 
     public class FetchTrailers extends AsyncTask<String, Void, List<Trailer>> {
@@ -310,34 +327,6 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
                 reviews.add(review);
             }
         }
-
-    }
-
-
-    public void saveToDb()
-    {
-        ContentValues cv=new ContentValues();
-        Uri uri=FavoriteContract.FavoriteEntry.CONTENT_URI;
-
-        cv.put(FavoriteContract.FavoriteEntry.MOVIE_POSTER,movie.getMoviePoster());
-        cv.put(FavoriteContract.FavoriteEntry.MOVIE_TITLE,movie.getTitle());
-        cv.put(FavoriteContract.FavoriteEntry.MOVIE_OVERVIEW,movie.getOverView());
-        cv.put(FavoriteContract.FavoriteEntry.MOVIE_RATING,movie.getUserRating());
-        cv.put(FavoriteContract.FavoriteEntry.MOVIE_RELEASE_DATE,movie.getReleaseDate());
-        cv.put(FavoriteContract.FavoriteEntry.MOVIE_BACKDROP,movie.getBackdropPath());
-        cv.put(FavoriteContract.FavoriteEntry.MOVIE_ID,movie.getId());
-        getContentResolver().insert(uri,
-                 cv);
-        Toast.makeText(DetailActivity.this,"Movie Saved",Toast.LENGTH_LONG).show();
-
-
-    }
-    public void removeFromDb()
-    {
-        Uri uri=Uri.parse(FavoriteContract.FavoriteEntry.CONTENT_URI+"/"+movie.getId());
-
-        getContentResolver().delete(uri, FavoriteContract.FavoriteEntry.MOVIE_ID+"="+movie.getId(),null);
-        Toast.makeText(DetailActivity.this,"Movie Removed ",Toast.LENGTH_LONG).show();
 
     }
 }
